@@ -8,7 +8,7 @@
 #			- Parent Category, Child Category, Budget Amount, Envelope
 #			- String, String, Float, Yes/No
 #		- Transaction in csv (comma delimited) This format should be the following 
-#			- "TransactionID, Parent Category, Child Category, Payor/Payee, Transaction Amount, Date" <- should be top line without quotes
+#			- "TransactionID, Parent Category, Child Category, Payor/Payee, Transaction Amount, Date" <- should be top row without quotes
 #			- Int, String, String, String, Float, String
 #		- Python Budgeting file
 #			- Other functions added to the file (and if published shared under the license)
@@ -22,9 +22,8 @@
 
 import csv
 
-# Running this function will take the transaction file and total all transactions based on category in a Parent Category, Child Category, Actual Amount csv output
+
 # Need to add - customer csv files names for inputs (based on args passed)
-# https://stackoverflow.com/questions/25485681/creating-a-nested-dictionary-from-a-csv-file-with-python
 def totalCategoryActualTransactionCSV(csvfile_name):
 	with open(csvfile_name, mode='r') as csv_file:
 		csv_reader = csv.DictReader(csv_file, delimiter=',') #possible ability to change delimiter
@@ -87,9 +86,9 @@ def createSubCatDict(parentCategory, csvfile_name):
 	
 def main():
 	TA_file = 'fauxTransactions.csv' # need to get from command line args
-	#createSubCatDict('Utilities', TA_file)
+	BU_file = 'fauxBudget.csv'
 	totalCategoryActualTransactionCSV(TA_file)
-	
+	totalCategoryActualTransactionCSV(BU_file)
 	return 1
 	
 if __name__ == "__main__":

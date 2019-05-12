@@ -25,53 +25,71 @@ import csv
 # Running this function will take the transaction file and total all transactions based on category in a Parent Category, Child Category, Actual Amount csv output
 # Need to add - customer csv files names for inputs (based on args passed)
 # https://stackoverflow.com/questions/25485681/creating-a-nested-dictionary-from-a-csv-file-with-python
-def totalCategoryActualTransactionCSV():
-	with open('fauxTransactions.csv', mode='r') as csv_file:
+def totalCategoryActualTransactionCSV(csvfile_name):
+	with open(csvfile_name, mode='r') as csv_file:
 		csv_reader = csv.DictReader(csv_file, delimiter=',') #possible ability to change delimiter
-		line_count = 0
 		
-		childCatTotalDict = {} # dictionary of totals
-		parentCatArray = () # array of dictionary
+		parentCatArray = uniqueCats(csvfile_name, 1) # gathers all parent categories
+		totalsDict = dict()
 		
-		for row in csv_reader:
-			print(row)
-			print(line_count)
-
-			if line_count == 0:
-				line_count += 1
+		for item in parentCatArray:
+			parentCat = item
 			
-			else:
-				parentCat = row['Parent Category']
-				childCat = row['Child Category']
-				transAmount = row['Transaction Amount']
+			childDict = createSubCatDict(parentCat, csvfile_name)
+			parentDict = {parentCat: childDict}
+			totalsDict.update(parentDict)
+			
+		print(totalsDict)
 				
-				# Check if parentCat does not exist in list already then create it
-				if parentCat not in parentCatArray:
-					parentCatArray.append(parentCat)
-				'''
-				# Does the child category exist in the parent?
-				if childCat in parentCatArray[parentCat]:
-					parentCatArray[i]{childCat}['Total Actual'] += transAmount
-				else:
-					parentCatArray[i]{}.update(['Child Category']:childCat, ['Total Actual']:transAmount)
-				
-				# lets me make sure to skip over the title line and how many lines processed
-				line_count += 1
-	
-	# Printing to stdout for now for testing then will print to csv 
-	for i in parentCatArray:
-		for j in i:
-			print(f'{Parent Category}, {Child Category}, {Total Actual}')
-	'''
+
 	#output_file = open('fauxTotalCategoryActual.csv', mode='w')
 	#output_writer = csv.DictWriter(output_file) #"Parent Category, Child Category, Total Actual
 
+# Return array with unique categories from transaction csv based on column sent
+# col 1 - Parent Categories
+# col 2 - Child Categories
+def uniqueCats(csvfile_name, col):
+	with open(csvfile_name, mode='r') as csv_file:
+		csv_reader = csv.reader(csv_file, delimiter=',') #possible future ability to change delimiter as optional definition arg
+		line_count = 0
+		
+		uniqueArray = list()
+		
+		for row in csv_reader:
+			if line_count == 0 and row[0] == "TransactionID":
+				#print(row[col])
+				line_count += 1
+			else:	
+				uniqueArray.append(row[col])
+				line_count += 1
+				
+	return uniqueArray
 
+# Totals all child categories of a given parent category
+def createSubCatDict(parentCategory, csvfile_name):
+	
+	subCatTotalsDict = dict()
+	
+	with open(csvfile_name, mode='r') as csv_file:
+		csv_reader = csv.DictReader(csv_file, delimiter=',') #possible ability to change delimiter
+		
+		for row in csv_reader:
+			if row['Parent Category'] == parentCategory: # This allows the creation of the dictionary all subcategories of a parent category
+				childCat = row['Child Category'] # assign the child category to a variable
+				if row['Child Category'] not in subCatTotalsDict:
+					dictCreator = {childCat:0} # create the log if it doesn't exist
+					subCatTotalsDict.update(dictCreator) # error if the dictionary entry isn't formatted before trying to update	
+				subtotal = subCatTotalsDict[childCat] + int(row['Transaction Amount'])
+				newTotal = {childCat:subtotal}
+				subCatTotalsDict.update(newTotal)
 
-
+	return subCatTotalsDict
 	
 def main():
-	totalCategoryActualTransactionCSV()
+	TA_file = 'fauxTransactions.csv' # need to get from command line args
+	#createSubCatDict('Utilities', TA_file)
+	totalCategoryActualTransactionCSV(TA_file)
+	
 	return 1
 	
 if __name__ == "__main__":

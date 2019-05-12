@@ -5,3 +5,5 @@ TransactionID,Parent Category,Child Category,Payor/Payee,Transaction Amount,Date
 003,Food,Groceries,Ingles,50,5/1/2019
 004,Food,Groceries,Ingles,25,5/2/2019
 005,Food,Groceries,Publix,125,5/3/2019
+006,Entertainment,Vacation,Disney,200,5/2/2019
+007,Food,Fast Food,Zaxbys,20,5/5/209

@@ -1,3 +1,4 @@
+'''
 #!/usr/bin/python3
 
 # This program is licensed under GPLv3+
@@ -19,12 +20,13 @@
 # First milestone of the project is to calculated actual cost - To do this we need to:
 # 	- Read the transaction file in
 # 	- Add up transactions of same categories
-
+'''
 import csv
 
 
-# Need to add - customer csv files names for inputs (based on args passed)
-def totalCategoryActualTransactionCSV(csvfile_name):
+
+def totalChildTransactions(csvfile_name):
+	# Need to add - customer csv files names for inputs (based on args passed)
 	with open(csvfile_name, mode='r') as csv_file:
 		csv_reader = csv.DictReader(csv_file, delimiter=',') #possible ability to change delimiter
 		
@@ -34,20 +36,16 @@ def totalCategoryActualTransactionCSV(csvfile_name):
 		for item in parentCatArray:
 			parentCat = item
 			
-			childDict = createSubCatDict(parentCat, csvfile_name)
-			parentDict = {parentCat: childDict}
-			totalsDict.update(parentDict)
+			childDict = createSubCatDict(parentCat, csvfile_name) #finds all child cat for a given parent
+			parentDict = {parentCat: childDict} #assigns all child cat to a given parent
+			totalsDict.update(parentDict) #adds parent into the totals dictionary
 			
-		print(totalsDict)
-				
+		return totalsDict
 
-	#output_file = open('fauxTotalCategoryActual.csv', mode='w')
-	#output_writer = csv.DictWriter(output_file) #"Parent Category, Child Category, Total Actual
-
-# Return array with unique categories from transaction csv based on column sent
-# col 1 - Parent Categories
-# col 2 - Child Categories
 def uniqueCats(csvfile_name, col):
+	# Return array with unique categories from transaction csv based on column sent
+	# col 1 - Parent Categories
+	# col 2 - Child Categories
 	with open(csvfile_name, mode='r') as csv_file:
 		csv_reader = csv.reader(csv_file, delimiter=',') #possible future ability to change delimiter as optional definition arg
 		line_count = 0
@@ -64,9 +62,8 @@ def uniqueCats(csvfile_name, col):
 				
 	return uniqueArray
 
-# Totals all child categories of a given parent category
 def createSubCatDict(parentCategory, csvfile_name):
-	
+	# Totals all child categories of a given parent category
 	subCatTotalsDict = dict()
 	
 	with open(csvfile_name, mode='r') as csv_file:
@@ -83,15 +80,60 @@ def createSubCatDict(parentCategory, csvfile_name):
 				subCatTotalsDict.update(newTotal)
 
 	return subCatTotalsDict
+
+def compareBudgetToActual(budgetDict, actualDict):
+	#Both should be in the format of 
+	#{'Parent Category':{'Child 1':-54, 'Child 2':609}}
+	compDict = dict()
 	
+	for key in budgetDict:
+		parentKey = dict()
+		if key in actualDict:
+			print(key)
+			for child in budgetDict[key]:
+				if child in actualDict[key]:
+					difBudgetActual = budgetDict[key][child] - actualDict[key][child]
+					
+					print("\t"+child+": "+str(difBudgetActual))
+				else:
+					# Zero transactions against a bugdet, show original budget amount
+					print("\t"+child+": N/A")
+		else:
+			# Parent category not in transactions
+			print(key)
+			for child in budgetDict[key]:
+				# each child is also not in transactions
+				difBudgetActual = budgetDict[key][child]
+				print("\t"+child+": "+str(difBudgetActual))
+	for key2 in actualDict:
+		# need to filter all transactions that do not have a budget category
+		if key2 not in budgetDict:
+			print(key2)
+			for child2 in actualDict[key2]:
+				print("\t"+child2+": "+str(actualDict[key2][child2]))
+				
+		else:
+			# need to check if any childs in transaction exist that budget does not have
+			for child2 in actualDict[key2]:
+				if child2 not in budgetDict[key2]:
+					print(key2)
+					print("\t"+child2+": "+str(actualDict[key2][child2]))
+					
+	''' ^^^ All the data can be gathered above for combining into compDict ^^^ '''
+					
+
 def main():
 	TA_file = 'fauxTransactions.csv' # need to get from command line args
 	BU_file = 'fauxBudget.csv'
-	totalCategoryActualTransactionCSV(TA_file)
-	totalCategoryActualTransactionCSV(BU_file)
+	budgetTotals = {'House':{'Mortgage':700}, 'Utilities':{'Electricity':200,'Water':50}, 'Food':{'Groceries':100}, 'Car':{'Fuel':25, 'Maint':88}}
+	
+	actualTotals = totalChildTransactions(TA_file)
+	compareBudgetToActual(budgetTotals, actualTotals)
+	
 	return 1
 	
 if __name__ == "__main__":
 	main()
 # Note: Yes/No should also accept YES, NO, yes, no with any captialization arraignment
-
+#output_file = open('fauxTotalCategoryActual.csv', mode='w')
+#output_writer = csv.DictWriter(output_file) #"Parent Category, Child Category, Total Actual
